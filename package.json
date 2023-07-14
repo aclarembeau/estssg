@@ -1,0 +1,25 @@
+{
+  "name": "estssg",
+  "version": "1.0.12",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "estssg": "./index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "connect-livereload": "^0.6.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "glob": "^10.3.3",
+    "livereload": "^0.9.3",
+    "sass": "^1.63.6",
+    "tailwindcss": "^3.3.3"
+  }
+}
