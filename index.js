@@ -10,6 +10,7 @@ import livereload from "livereload";
 import express from "express";
 import connectLivereload from "connect-livereload";
 import * as build from 'tailwindcss/lib/cli/build/index.js';
+import * as path from "path";
 
 await build.build({
     '_': [],
@@ -46,8 +47,12 @@ setInterval(async () => {
         console.log(source, 'changed')
         try {
             let dest = source.replace('src/', 'dest/');
+            try {
+                await fs.mkdir(path.dirname(dest), {recursive: true})
+            } catch (error) {};
+
             if (source.endsWith('.ejs')) {
-                const res = ejs.compile((await fs.readFile(source)).toString())()
+                const res = ejs.compile((await fs.readFile(source)).toString())({dirname: process.cwd()})
                 await fs.writeFile(dest.replace('.ejs', '.html'), res)
             }
             if (source.endsWith('.scss')) {
