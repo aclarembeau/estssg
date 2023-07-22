@@ -62,8 +62,9 @@ await build.build({
 })
 
 if(command == 'build'){
-    rebuild()
-    process.exit(0)
+    rebuild().then(() => {
+        process.exit(0)
+    })
 }
 
 if(command == 'serve'){
