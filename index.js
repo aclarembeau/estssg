@@ -12,35 +12,14 @@ import connectLivereload from "connect-livereload";
 import * as build from 'tailwindcss/lib/cli/build/index.js';
 import * as path from "path";
 
-await build.build({
-    '_': [],
-    '--watch': true,
-    '--output': 'dest/tailwind.css'
-})
-
 const changedFiles = new Set()
 
 for(const file of globSync('src/**/*')){
     changedFiles.add(file)
 }
 
-chokidar.watch('src', {
-    persistent: true
-})
-    .on('raw', async (event, source, details) => {
-        if(source.endsWith('~')) return;
 
-        if (details.watchedPath.includes(source)) {
-            source = details.watchedPath;
-        } else {
-            source = `${details.watchedPath}/${source}`;
-        }
-
-        changedFiles.add(source)
-
-    });
-
-setInterval(async () => {
+async function rebuild() {
     const sources = Array.from(changedFiles)
     changedFiles.clear()
     for (const source of sources) {
@@ -60,21 +39,64 @@ setInterval(async () => {
                 await fs.writeFile(dest.replace('.scss', '.css'), res.css)
             }
             if (source.endsWith('.png') || source.endsWith('.jpg') || source.endsWith('.html')) {
-                await fs.writeFile(dest, (await fs.readFile(source)).toString())
+                await fs.writeFile(dest, (await fs.readFile(source)))
             }
         } catch (e) {
             console.error(e)
         }
     }
-}, 500)
+}
 
-console.log('starting server')
-const liveReloadServer = livereload.createServer();
-liveReloadServer.watch('dest');
-var server = express();
-server.use(connectLivereload());
-server.use(express.static('dest'));
-server.listen(8080);
-console.log('listening on http://localhost:8080')
+const command = process.argv.slice(-1)[0]
+if(!['serve', 'build'].includes(command)){
+    console.error('Please specify command: serve or build'); 
+    process.exit(0)
+}
 
 
+    
+await build.build({
+    '_': [],
+    '--watch': true,
+    '--output': 'dest/tailwind.css'
+})
+
+if(command == 'build'){
+    rebuild()
+    process.exit(0)
+}
+
+if(command == 'serve'){
+    
+
+    chokidar.watch('src', {
+        persistent: true
+    })
+        .on('raw', async (event, source, details) => {
+            if(source.endsWith('~')) return;
+    
+            if (details.watchedPath.includes(source)) {
+                source = details.watchedPath;
+            } else {
+                source = `${details.watchedPath}/${source}`;
+            }
+    
+            changedFiles.add(source)
+    
+        });
+    
+    
+    setInterval(rebuild, 500)
+    
+    console.log('starting server')
+    const liveReloadServer = livereload.createServer();
+    liveReloadServer.watch('dest');
+    var server = express();
+    server.use(connectLivereload());
+    server.use(express.static('dest'));
+    server.listen(8080);
+    console.log('listening on http://localhost:8080')
+    
+    
+    
+}
